@@ -1,0 +1,734 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SnapLore - Online Store</title>
+
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: Arial, sans-serif;
+        }
+
+        body {
+            background: #f5f5f5;
+            color: #333;
+        }
+
+        /* Header */
+        header {
+            background: #222;
+            color: white;
+            padding: 18px 7%;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        header h1 {
+            font-size: 26px;
+        }
+
+        nav a {
+            color: white;
+            text-decoration: none;
+            margin-left: 20px;
+        }
+
+        .cart-button {
+            background: #43ef05;
+            border: none;
+            padding: 10px 15px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: bold;
+        }
+
+        /* Hero */
+        .hero {
+            text-align: center;
+            padding: 60px 20px;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+        }
+
+        .hero h2 {
+            font-size: 40px;
+            margin-bottom: 10px;
+        }
+
+        .hero p {
+            font-size: 18px;
+        }
+
+        /* Search and Filter */
+        .controls {
+            padding: 25px 7%;
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            flex-wrap: wrap;
+        }
+
+        .controls input,
+        .controls select {
+            padding: 12px;
+            width: 250px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+        }
+
+        /* Products */
+        .products {
+            padding: 20px 7% 50px;
+        }
+
+        .products h2 {
+            text-align: center;
+            margin-bottom: 25px;
+        }
+
+        .product-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 25px;
+        }
+
+        .product {
+            background: white;
+            border-radius: 10px;
+            overflow: hidden;
+            box-shadow: 0 3px 10px rgba(0,0,0,0.1);
+            transition: 0.3s;
+        }
+
+        .product:hover {
+            transform: translateY(-5px);
+        }
+
+        .product img {
+            width: 100%;
+            height: 200px;
+            object-fit: cover;
+        }
+
+        .product-info {
+            padding: 15px;
+        }
+
+        .product-info h3 {
+            margin-bottom: 8px;
+        }
+
+        .price {
+            color: #e65100;
+            font-size: 20px;
+            font-weight: bold;
+            margin: 10px 0;
+        }
+
+        .add-btn {
+            width: 100%;
+            padding: 11px;
+            border: none;
+            background: #222;
+            color: white;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+
+        .add-btn:hover {
+            background: #ff9800;
+        }
+
+        /* Cart */
+        .cart {
+            position: fixed;
+            top: 0;
+            right: -420px;
+            width: 400px;
+            max-width: 100%;
+            height: 100vh;
+            background: white;
+            box-shadow: -3px 0 10px rgba(0,0,0,0.2);
+            z-index: 200;
+            padding: 25px;
+            transition: 0.3s;
+            overflow-y: auto;
+        }
+
+        .cart.active {
+            right: 0;
+        }
+
+        .cart-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .close-cart {
+            border: none;
+            background: #e53935;
+            color: white;
+            padding: 7px 10px;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+
+        .cart-item {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 15px;
+            padding-bottom: 15px;
+            border-bottom: 1px solid #ddd;
+        }
+
+        .cart-item img {
+            width: 70px;
+            height: 70px;
+            object-fit: cover;
+            border-radius: 5px;
+        }
+
+        .cart-details {
+            flex: 1;
+        }
+
+        .quantity {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-top: 7px;
+        }
+
+        .quantity button {
+            border: none;
+            background: #ddd;
+            padding: 4px 9px;
+            cursor: pointer;
+        }
+
+        .remove {
+            color: red;
+            border: none;
+            background: none;
+            cursor: pointer;
+            margin-top: 5px;
+        }
+
+        .cart-total {
+            font-size: 20px;
+            font-weight: bold;
+            margin: 20px 0;
+        }
+
+        .checkout-btn {
+            width: 100%;
+            padding: 13px;
+            background: #28a745;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+        }
+
+        /* Checkout */
+        .checkout {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(0,0,0,0.6);
+            z-index: 300;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .checkout.active {
+            display: flex;
+        }
+
+        .checkout-box {
+            background: white;
+            padding: 30px;
+            width: 500px;
+            max-width: 100%;
+            border-radius: 10px;
+        }
+
+        .checkout-box h2 {
+            margin-bottom: 20px;
+        }
+
+        .checkout-box input,
+        .checkout-box textarea,
+        .checkout-box select {
+            width: 100%;
+            padding: 12px;
+            margin: 8px 0;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+        }
+
+        .place-order {
+            width: 100%;
+            padding: 13px;
+            background: #007bff;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            margin-top: 10px;
+        }
+
+        .cancel {
+            width: 100%;
+            padding: 10px;
+            margin-top: 8px;
+            background: #ddd;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+
+        footer {
+            background: #222;
+            color: white;
+            text-align: center;
+            padding: 20px;
+        }
+
+        @media (max-width: 600px) {
+            header {
+                padding: 15px;
+            }
+
+            nav {
+                display: none;
+            }
+
+            .hero h2 {
+                font-size: 30px;
+            }
+
+            .cart {
+                width: 100%;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+<header>
+    <h1>SnapLore</h1>
+
+    <nav>
+        <a href="#home">Home</a>
+        <a href="#products">Products</a>
+    </nav>
+
+    <button class="cart-button" onclick="openCart()">
+        🛒 Cart (<span id="cart-count">0</span>)
+    </button>
+</header>
+
+<section class="hero" id="home">
+    <h2>Welcome to SnapLore</h2>
+    <p>Best place for Gifting<br>
+        Quality products at affordable prices</p>
+</section>
+
+<!-- Search & Filter -->
+<div class="controls">
+    <input
+        type="text"
+        id="search"
+        placeholder="Search products..."
+        onkeyup="displayProducts()"
+    >
+
+    <select id="category" onchange="displayProducts()">
+        <option value="all">All Categories</option>
+        <option value="frames">Frames</option>
+        <option value="hampers">Hampers</option>
+        <option value="bouquets">Bouquets</option>
+    </select>
+</div>
+
+<!-- Products -->
+<section class="products" id="products">
+    <h2>Our Products</h2>
+
+    <div class="product-grid" id="product-list"></div>
+</section>
+
+<!-- Cart -->
+<div class="cart" id="cart">
+
+    <div class="cart-header">
+        <h2>Your Cart</h2>
+        <button class="close-cart" onclick="closeCart()">✕</button>
+    </div>
+
+    <div id="cart-items"></div>
+
+    <div class="cart-total">
+        Total: ₹<span id="cart-total">0</span>
+    </div>
+
+    <button class="checkout-btn" onclick="openCheckout()">
+        Proceed to Checkout
+    </button>
+</div>
+
+<!-- Checkout Modal -->
+<div class="checkout" id="checkout">
+
+    <div class="checkout-box">
+
+        <h2>Checkout</h2>
+
+        <form onsubmit="placeorder(event)">
+
+            <input
+                type="text"
+                id="name"
+                placeholder="Full Name"
+                required
+            >
+
+            <input
+                type="email"
+                id="email"
+                placeholder="Email Address"
+                required
+            >
+
+            <input
+                type="tel"
+                id="phone"
+                placeholder="Phone Number"
+                required
+            >
+
+            <textarea
+                id="address"
+                rows="4"
+                placeholder="Delivery Address"
+                required
+            ></textarea>
+
+            <select id="payment" required>
+                <option value="">Select Payment Method</option>
+                <option value="cod">Cash on Delivery</option>
+                <option value="upi">UPI</option>
+                <option value="card">Credit/Debit Card</option>
+            </select>
+
+            <button class="place-order" type="submit">
+                Place Order
+            </button>
+
+            <button
+                type="button"
+                class="cancel"
+                onclick="closeCheckout()"
+            >
+                Cancel
+            </button>
+
+        </form>
+    </div>
+</div>
+
+<footer>
+    <p>© SnapLore. All Rights Reserved.</p>
+</footer>
+
+<script>
+
+    // Product Data
+    let products = [];
+
+async function loadProducts() {
+    try {
+        const response = await fetch("/api/products");
+
+        if (!response.ok) {
+            throw new Error("Failed to load products");
+        }
+
+        products = await response.json();
+
+        displayProducts();
+
+    } catch (error) {
+        console.error("Error loading products:", error);
+        alert("Could not load products from database.");
+    }
+}
+
+loadProducts();
+
+    let cart = [];
+
+    // Display Products
+    function displayProducts() {
+
+        const list = document.getElementById("product-list");
+        const search = document
+            .getElementById("search")
+            .value
+            .toLowerCase();
+
+        const category = document.getElementById("category").value;
+
+        list.innerHTML = "";
+
+        const filteredProducts = products.filter(product => {
+
+            const matchesSearch =
+                product.name.toLowerCase().includes(search);
+
+            const matchesCategory =
+                category === "all" ||
+                product.category === category;
+
+            return matchesSearch && matchesCategory;
+        });
+
+        filteredProducts.forEach(product => {
+
+            list.innerHTML += `
+                <div class="product">
+
+                    <img src="${product.image}" alt="${product.name}">
+
+                    <div class="product-info">
+
+                        <h3>${product.name}</h3>
+
+                        <p class="price">
+                            ₹${product.price}
+                        </p>
+
+                        <button
+                            class="add-btn"
+                            onclick="addToCart(${product.id})"
+                        >
+                            Add to Cart
+                        </button>
+
+                    </div>
+                </div>
+            `;
+        });
+    }
+
+    // Add product to cart
+    function addToCart(id) {
+
+        const existingProduct = cart.find(item => item.id === id);
+
+        if (existingProduct) {
+            existingProduct.quantity++;
+        } else {
+
+            const product = products.find(item => item.id === id);
+
+            cart.push({
+                ...product,
+                quantity: 1
+            });
+        }
+
+        updateCart();
+
+        alert("Product added to cart!");
+    }
+
+    // Update cart
+    function updateCart() {
+
+        const cartItems = document.getElementById("cart-items");
+
+        cartItems.innerHTML = "";
+
+        let total = 0;
+        let count = 0;
+
+        cart.forEach(item => {
+
+            total += item.price * item.quantity;
+            count += item.quantity;
+
+            cartItems.innerHTML += `
+                <div class="cart-item">
+
+                    <img src="${item.image}" alt="${item.name}">
+
+                    <div class="cart-details">
+
+                        <strong>${item.name}</strong>
+
+                        <p>₹${item.price}</p>
+
+                        <div class="quantity">
+
+                            <button onclick="changeQuantity(${item.id}, -1)">
+                                −
+                            </button>
+
+                            <span>${item.quantity}</span>
+
+                            <button onclick="changeQuantity(${item.id}, 1)">
+                                +
+                            </button>
+
+                        </div>
+
+                        <button
+                            class="remove"
+                            onclick="removeFromCart(${item.id})"
+                        >
+                            Remove
+                        </button>
+
+                    </div>
+                </div>
+            `;
+        });
+
+        document.getElementById("cart-total").textContent = total;
+        document.getElementById("cart-count").textContent = count;
+    }
+
+    // Change quantity
+    function changeQuantity(id, change) {
+
+        const item = cart.find(product => product.id === id);
+
+        if (!item) return;
+
+        item.quantity += change;
+
+        if (item.quantity <= 0) {
+            removeFromCart(id);
+        }
+
+        updateCart();
+    }
+
+    // Remove item
+    function removeFromCart(id) {
+
+        cart = cart.filter(item => item.id !== id);
+
+        updateCart();
+    }
+
+    // Open cart
+    function openCart() {
+        document.getElementById("cart").classList.add("active");
+    }
+
+    // Close cart
+    function closeCart() {
+        document.getElementById("cart").classList.remove("active");
+    }
+
+    // Open checkout
+function openCheckout() {
+    document.getElementById("checkout").classList.add("active");
+}
+
+// Close checkout
+function closeCheckout() {
+    document.getElementById("checkout").classList.remove("active");
+}
+    // Checkout
+const checkoutForm = document.querySelector(".checkout form");
+
+checkoutForm.addEventListener("submit", async function (e) {
+    e.preventDefault();
+
+    const order = {
+        name: document.getElementById("name").value,
+        email: document.getElementById("email").value,
+        phone: document.getElementById("phone").value,
+        address: document.getElementById("address").value,
+        paymentMethod: document.getElementById("payment").value,
+        items: cart,
+        total: cart.reduce(
+            (sum, item) => sum + item.price * item.quantity,
+            0
+        )
+    };
+
+    try {
+        const response = await fetch("/api/orders", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify(order)
+        });
+
+        const result = await response.json();
+
+        if (!response.ok) {
+            throw new Error(result.error || "Order failed");
+        }
+
+        // Show success message
+        alert(
+            "Order placed successfully!\n\nOrder ID: " +
+            result.orderId
+        );
+
+        // Clear cart
+        cart = [];
+        updateCart();
+
+        // Reset checkout form
+        checkoutForm.reset();
+
+        // Close checkout and cart
+        closeCheckout();
+        closeCart();
+
+    } catch (error) {
+        console.error("Order error:", error);
+
+        alert(
+            "Could not place order.\n\n" +
+            error.message
+        );
+    }
+});
+        cart = [];
+
+        updateCart();
+        closeCheckout();
+        closeCart();
+
+        document.querySelector("form").reset();
+    
+
+    // Load products when page opens
+    displayProducts();
+
+</script>
+
+</body>
+</html>

@@ -1,0 +1,580 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
+
+    <title>SnapLore - Admin Orders</title>
+
+    <style>
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: Arial, sans-serif;
+        }
+
+        body {
+            background: #f5f5f5;
+            color: #333;
+        }
+
+        header {
+            background: #222;
+            color: white;
+            padding: 20px 7%;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 20px;
+        }
+
+        header h1 {
+            font-size: 25px;
+        }
+
+        .back-button {
+            background: white;
+            color: #222;
+            text-decoration: none;
+            padding: 10px 15px;
+            border-radius: 5px;
+            font-weight: bold;
+        }
+
+        .container {
+            width: 90%;
+            max-width: 1200px;
+            margin: 30px auto;
+        }
+
+        .top-bar {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 15px;
+            flex-wrap: wrap;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        .top-bar h2 {
+            margin-bottom: 5px;
+        }
+
+        .refresh-button {
+            background: #007bff;
+            color: white;
+            border: none;
+            padding: 11px 18px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 15px;
+        }
+
+        .refresh-button:hover {
+            background: #0056b3;
+        }
+
+        #status {
+            margin-bottom: 20px;
+            font-weight: bold;
+        }
+
+        .order-card {
+            background: white;
+            border-radius: 10px;
+            padding: 25px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        }
+
+        .order-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 15px;
+            flex-wrap: wrap;
+            border-bottom: 1px solid #ddd;
+            padding-bottom: 15px;
+            margin-bottom: 20px;
+        }
+
+        .order-id {
+            font-weight: bold;
+            color: #007bff;
+            word-break: break-all;
+        }
+
+        .order-date {
+            color: #666;
+            font-size: 14px;
+        }
+
+        .customer-info {
+            display: grid;
+            grid-template-columns: repeat(
+                auto-fit,
+                minmax(220px, 1fr)
+            );
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .info-box {
+            background: #f8f8f8;
+            padding: 15px;
+            border-radius: 6px;
+        }
+
+        .info-box strong {
+            display: block;
+            margin-bottom: 6px;
+        }
+
+        .items-title {
+            margin-bottom: 10px;
+        }
+
+        .item {
+            display: flex;
+            justify-content: space-between;
+            gap: 15px;
+            padding: 10px 0;
+            border-bottom: 1px solid #eee;
+        }
+
+        .order-total {
+            text-align: right;
+            font-size: 20px;
+            font-weight: bold;
+            margin-top: 20px;
+            color: #e65100;
+        }
+
+        .no-orders {
+            background: white;
+            padding: 40px;
+            text-align: center;
+            border-radius: 10px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        .error {
+            background: #ffebee;
+            color: #c62828;
+            padding: 15px;
+            border-radius: 5px;
+        }
+
+        @media (max-width: 600px) {
+
+            header {
+                padding: 15px;
+            }
+
+            .container {
+                width: 95%;
+            }
+
+            .order-card {
+                padding: 15px;
+            }
+
+            .item {
+                flex-direction: column;
+                gap: 5px;
+            }
+
+        }
+
+    </style>
+
+</head>
+
+
+<body>
+
+
+<header>
+
+    <h1>SnapLore Admin</h1>
+
+    <a
+        href="/index.html"
+        class="back-button"
+    >
+        Back to Store
+    </a>
+
+</header>
+
+
+<div class="container">
+
+
+    <div class="top-bar">
+
+        <div>
+
+            <h2>Customer Orders</h2>
+
+            <p>
+                View orders saved in Redis
+            </p>
+
+        </div>
+
+        <button
+            class="refresh-button"
+            onclick="loadOrders()"
+        >
+            Refresh Orders
+        </button>
+
+    </div>
+
+
+    <div id="status">
+        Loading orders...
+    </div>
+
+
+    <div id="orders-container"></div>
+
+
+</div>
+
+
+<script>
+
+
+async function loadOrders() {
+
+    const status =
+        document.getElementById("status");
+
+    const container =
+        document.getElementById("orders-container");
+
+
+    status.textContent =
+        "Loading orders...";
+
+    status.className = "";
+
+    container.innerHTML = "";
+
+
+    try {
+
+        const response =
+            await fetch("/api/orders");
+
+
+        if (!response.ok) {
+
+            throw new Error(
+                "Could not load orders"
+            );
+
+        }
+
+
+        const orders =
+            await response.json();
+
+
+        if (orders.length === 0) {
+
+            status.textContent =
+                "No orders found.";
+
+            container.innerHTML = `
+                <div class="no-orders">
+                    <h2>No orders yet</h2>
+                    <p>
+                        Orders placed by customers
+                        will appear here.
+                    </p>
+                </div>
+            `;
+
+            return;
+
+        }
+
+
+        status.textContent =
+            `${orders.length} order(s) found`;
+
+
+        orders.forEach(order => {
+
+            const orderCard =
+                document.createElement("div");
+
+            orderCard.className =
+                "order-card";
+
+
+            const orderDate =
+                order.createdAt
+                    ? new Date(
+                        order.createdAt
+                    ).toLocaleString()
+                    : "Unknown";
+
+
+            const items =
+                order.items || [];
+
+
+            let itemsHTML = "";
+
+
+            if (items.length === 0) {
+
+                itemsHTML = `
+                    <p>No product details available.</p>
+                `;
+
+            } else {
+
+                items.forEach(item => {
+
+                    const quantity =
+                        item.quantity || 1;
+
+                    const itemTotal =
+                        (item.price || 0)
+                        * quantity;
+
+
+                    itemsHTML += `
+
+                        <div class="item">
+
+                            <div>
+
+                                <strong>
+                                    ${escapeHTML(
+                                        item.name ||
+                                        "Unknown Product"
+                                    )}
+                                </strong>
+
+                                <p>
+                                    Quantity:
+                                    ${quantity}
+                                </p>
+
+                            </div>
+
+                            <strong>
+                                ₹${itemTotal}
+                            </strong>
+
+                        </div>
+
+                    `;
+
+                });
+
+            }
+
+
+            orderCard.innerHTML = `
+
+                <div class="order-header">
+
+                    <div>
+
+                        <div class="order-id">
+                            Order ID:
+                            ${escapeHTML(
+                                order.id ||
+                                "Unknown"
+                            )}
+                        </div>
+
+                        <div class="order-date">
+                            ${orderDate}
+                        </div>
+
+                    </div>
+
+                </div>
+
+
+                <div class="customer-info">
+
+
+                    <div class="info-box">
+
+                        <strong>
+                            Customer Name
+                        </strong>
+
+                        ${escapeHTML(
+                            order.name ||
+                            "Not provided"
+                        )}
+
+                    </div>
+
+
+                    <div class="info-box">
+
+                        <strong>
+                            Email
+                        </strong>
+
+                        ${escapeHTML(
+                            order.email ||
+                            "Not provided"
+                        )}
+
+                    </div>
+
+
+                    <div class="info-box">
+
+                        <strong>
+                            Phone
+                        </strong>
+
+                        ${escapeHTML(
+                            order.phone ||
+                            "Not provided"
+                        )}
+
+                    </div>
+
+
+                    <div class="info-box">
+
+                        <strong>
+                            Payment Method
+                        </strong>
+
+                        ${escapeHTML(
+                            order.paymentMethod ||
+                            "Not specified"
+                        )}
+
+                    </div>
+
+
+                    <div class="info-box">
+
+                        <strong>
+                            Delivery Address
+                        </strong>
+
+                        ${escapeHTML(
+                            order.address ||
+                            "Not provided"
+                        )}
+
+                    </div>
+
+
+                </div>
+
+
+                <h3 class="items-title">
+                    Products Ordered
+                </h3>
+
+
+                <div>
+
+                    ${itemsHTML}
+
+                </div>
+
+
+                <div class="order-total">
+
+                    Total:
+                    ₹${order.total || 0}
+
+                </div>
+
+            `;
+
+
+            container.appendChild(
+                orderCard
+            );
+
+        });
+
+
+    } catch (error) {
+
+        console.error(
+            "Error:",
+            error
+        );
+
+
+        status.textContent =
+            "Error loading orders";
+
+        status.className =
+            "error";
+
+
+        container.innerHTML = `
+
+            <div class="error">
+
+                ${escapeHTML(
+                    error.message
+                )}
+
+            </div>
+
+        `;
+
+    }
+
+}
+
+
+// Prevent HTML injection
+function escapeHTML(value) {
+
+    const div =
+        document.createElement("div");
+
+    div.textContent =
+        String(value);
+
+    return div.innerHTML;
+
+}
+
+
+// Load orders when page opens
+loadOrders();
+
+
+</script>
+
+
+</body>
+
+</html>
