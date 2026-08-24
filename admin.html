@@ -2,18 +2,12 @@
 <html lang="en">
 
 <head>
-
     <meta charset="UTF-8">
-
-    <meta
-        name="viewport"
-        content="width=device-width, initial-scale=1.0"
-    >
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
     <title>SnapLore - Admin Panel</title>
 
     <style>
-
         * {
             box-sizing: border-box;
             margin: 0;
@@ -30,11 +24,9 @@
             background: #222;
             color: white;
             padding: 20px 7%;
-
             display: flex;
             justify-content: space-between;
             align-items: center;
-
             gap: 15px;
             flex-wrap: wrap;
         }
@@ -46,60 +38,43 @@
         .back-button {
             background: white;
             color: #222;
-
             text-decoration: none;
-
             padding: 10px 15px;
-
             border-radius: 5px;
-
             font-weight: bold;
         }
 
         .container {
             width: 90%;
             max-width: 1200px;
-
             margin: 30px auto;
         }
 
         .panel {
             background: white;
-
             padding: 25px;
-
             border-radius: 10px;
-
             margin-bottom: 25px;
-
-            box-shadow:
-                0 2px 10px
-                rgba(0, 0, 0, 0.1);
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
         }
 
         .panel h2 {
             margin-bottom: 8px;
         }
 
-        .description {
+        .panel-description {
             color: #666;
             margin-bottom: 20px;
         }
 
         .form-grid {
-
             display: grid;
-
-            grid-template-columns:
-                repeat(2, 1fr);
-
+            grid-template-columns: repeat(2, 1fr);
             gap: 15px;
         }
 
         .form-group {
-
             display: flex;
-
             flex-direction: column;
         }
 
@@ -108,53 +83,34 @@
         }
 
         label {
-
             font-weight: bold;
-
             margin-bottom: 7px;
         }
 
         input,
         select {
-
             width: 100%;
-
             padding: 12px;
-
-            border:
-                1px solid #ccc;
-
+            border: 1px solid #ccc;
             border-radius: 6px;
-
             font-size: 15px;
         }
 
         input:focus,
         select:focus {
-
             outline: none;
-
             border-color: #007bff;
         }
 
         .add-button {
-
             margin-top: 20px;
-
             background: #28a745;
-
             color: white;
-
             border: none;
-
             padding: 13px 20px;
-
             border-radius: 6px;
-
             cursor: pointer;
-
             font-size: 16px;
-
             font-weight: bold;
         }
 
@@ -163,36 +119,659 @@
         }
 
         .add-button:disabled {
-
             background: #999;
-
             cursor: not-allowed;
         }
 
         .message {
-
             display: none;
-
             margin-top: 15px;
-
             padding: 12px;
-
             border-radius: 6px;
-
             font-weight: bold;
         }
 
         .message.success {
-
             display: block;
-
             background: #e8f5e9;
-
             color: #2e7d32;
         }
 
         .message.error {
-
             display: block;
+            background: #ffebee;
+            color: #c62828;
+        }
 
-            background: #
+        .products-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 15px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+
+        .refresh-button {
+            background: #007bff;
+            color: white;
+            border: none;
+            padding: 11px 18px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 15px;
+        }
+
+        .refresh-button:hover {
+            background: #0056b3;
+        }
+
+        #products-status {
+            margin-bottom: 15px;
+            font-weight: bold;
+        }
+
+        .product-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 20px;
+        }
+
+        .product-card {
+            background: #fafafa;
+            border: 1px solid #ddd;
+            border-radius: 10px;
+            overflow: hidden;
+        }
+
+        .product-card img {
+            width: 100%;
+            height: 180px;
+            object-fit: cover;
+            background: #eee;
+        }
+
+        .product-info {
+            padding: 15px;
+        }
+
+        .product-info h3 {
+            margin-bottom: 8px;
+        }
+
+        .product-price {
+            color: #e65100;
+            font-size: 19px;
+            font-weight: bold;
+            margin: 8px 0;
+        }
+
+        .product-category {
+            display: inline-block;
+            background: #e3f2fd;
+            color: #1565c0;
+            padding: 5px 8px;
+            border-radius: 4px;
+            font-size: 13px;
+            margin-bottom: 12px;
+        }
+
+        .delete-button {
+            width: 100%;
+            background: #e53935;
+            color: white;
+            border: none;
+            padding: 10px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: bold;
+        }
+
+        .delete-button:hover {
+            background: #c62828;
+        }
+
+        .empty {
+            background: #fafafa;
+            border: 1px dashed #ccc;
+            padding: 35px;
+            text-align: center;
+            border-radius: 8px;
+            color: #666;
+        }
+
+        .orders-link {
+            display: inline-block;
+            margin-top: 10px;
+            color: #007bff;
+            text-decoration: none;
+        }
+
+        @media (max-width: 650px) {
+            header {
+                padding: 15px;
+            }
+
+            .container {
+                width: 95%;
+            }
+
+            .panel {
+                padding: 18px;
+            }
+
+            .form-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .form-group.full {
+                grid-column: auto;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+<header>
+    <h1>SnapLore Admin</h1>
+
+    <a href="/index.html" class="back-button">
+        Back to Store
+    </a>
+</header>
+
+<div class="container">
+
+    <!-- ADD PRODUCT -->
+    <section class="panel">
+
+        <h2>➕ Add New Product</h2>
+
+        <p class="panel-description">
+            Add a product to your SnapLore store. The product will be saved in Redis.
+        </p>
+
+        <form id="product-form">
+
+            <div class="form-grid">
+
+                <div class="form-group">
+                    <label for="name">Product Name</label>
+
+                    <input
+                        type="text"
+                        id="name"
+                        placeholder="Example: Anniversary Gift Box"
+                        required
+                    >
+                </div>
+
+                <div class="form-group">
+                    <label for="price">Price (₹)</label>
+
+                    <input
+                        type="number"
+                        id="price"
+                        placeholder="Example: 799"
+                        min="0"
+                        step="0.01"
+                        required
+                    >
+                </div>
+
+                <div class="form-group">
+                    <label for="category">Category</label>
+
+                    <select id="category" required>
+                        <option value="">Select Category</option>
+                        <option value="frames">Frames</option>
+                        <option value="hampers">Hampers</option>
+                        <option value="bouquets">Bouquets</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="image">Image URL / Image Path</label>
+
+                    <input
+                        type="text"
+                        id="image"
+                        placeholder="Example: images/newproduct.jpg"
+                        required
+                    >
+                </div>
+
+            </div>
+
+            <button
+                type="submit"
+                class="add-button"
+                id="add-button"
+            >
+                Add Product
+            </button>
+
+            <div id="message" class="message"></div>
+
+        </form>
+
+    </section>
+
+    <!-- PRODUCTS -->
+    <section class="panel">
+
+        <div class="products-header">
+
+            <div>
+                <h2>📦 Manage Products</h2>
+
+                <p class="panel-description" style="margin-bottom: 0;">
+                    Products currently saved in Redis
+                </p>
+            </div>
+
+            <button
+                class="refresh-button"
+                onclick="loadProducts()"
+            >
+                Refresh Products
+            </button>
+
+        </div>
+
+        <div id="products-status">
+            Loading products...
+        </div>
+
+        <div
+            class="product-grid"
+            id="product-list"
+        ></div>
+
+    </section>
+
+    <!-- ORDERS -->
+    <section class="panel">
+
+        <h2>🛍️ Customer Orders</h2>
+
+        <p class="panel-description">
+            View the orders customers have placed.
+        </p>
+
+        <a
+            href="/admin-orders.html"
+            class="orders-link"
+        >
+            Open Orders Page →
+        </a>
+
+    </section>
+
+</div>
+
+<script>
+
+    const productForm =
+        document.getElementById("product-form");
+
+    const message =
+        document.getElementById("message");
+
+    const addButton =
+        document.getElementById("add-button");
+
+    const productList =
+        document.getElementById("product-list");
+
+    const productsStatus =
+        document.getElementById("products-status");
+
+
+    /* =========================
+       SHOW MESSAGE
+       ========================= */
+
+    function showMessage(text, type) {
+
+        message.textContent = text;
+
+        message.className =
+            "message " + type;
+
+    }
+
+
+    /* =========================
+       LOAD PRODUCTS
+       ========================= */
+
+    async function loadProducts() {
+
+        productsStatus.textContent =
+            "Loading products...";
+
+        productList.innerHTML = "";
+
+        try {
+
+            const response =
+                await fetch("/api/products");
+
+            const products =
+                await response.json();
+
+            if (!response.ok) {
+                throw new Error(
+                    products.error ||
+                    "Could not load products"
+                );
+            }
+
+            if (products.length === 0) {
+
+                productsStatus.textContent =
+                    "0 products found.";
+
+                productList.innerHTML = `
+                    <div class="empty">
+                        <h3>No products yet</h3>
+                        <p>Add your first product above.</p>
+                    </div>
+                `;
+
+                return;
+            }
+
+            productsStatus.textContent =
+                `${products.length} product(s) found`;
+
+            products.forEach(product => {
+
+                const card =
+                    document.createElement("div");
+
+                card.className = "product-card";
+
+                const image =
+                    document.createElement("img");
+
+                image.src = product.image;
+
+                image.alt = product.name;
+
+                image.onerror = function () {
+                    this.src =
+                        "https://via.placeholder.com/500x350?text=No+Image";
+                };
+
+
+                const info =
+                    document.createElement("div");
+
+                info.className = "product-info";
+
+
+                const name =
+                    document.createElement("h3");
+
+                name.textContent =
+                    product.name;
+
+
+                const price =
+                    document.createElement("div");
+
+                price.className =
+                    "product-price";
+
+                price.textContent =
+                    `₹${product.price}`;
+
+
+                const category =
+                    document.createElement("span");
+
+                category.className =
+                    "product-category";
+
+                category.textContent =
+                    product.category;
+
+
+                const deleteButton =
+                    document.createElement("button");
+
+                deleteButton.className =
+                    "delete-button";
+
+                deleteButton.textContent =
+                    "Delete Product";
+
+                deleteButton.onclick =
+                    () => deleteProduct(product.id);
+
+
+                info.appendChild(name);
+                info.appendChild(price);
+                info.appendChild(category);
+                info.appendChild(deleteButton);
+
+                card.appendChild(image);
+                card.appendChild(info);
+
+                productList.appendChild(card);
+
+            });
+
+        } catch (error) {
+
+            console.error(error);
+
+            productsStatus.textContent =
+                "Error loading products.";
+
+            productList.innerHTML = `
+                <div class="empty">
+                    <h3>Could not load products</h3>
+                    <p>${escapeHTML(error.message)}</p>
+                </div>
+            `;
+        }
+    }
+
+
+    /* =========================
+       ADD PRODUCT
+       ========================= */
+
+    productForm.addEventListener(
+        "submit",
+        async function (event) {
+
+            event.preventDefault();
+
+            const name =
+                document.getElementById("name")
+                    .value.trim();
+
+            const price =
+                document.getElementById("price")
+                    .value;
+
+            const category =
+                document.getElementById("category")
+                    .value;
+
+            const image =
+                document.getElementById("image")
+                    .value.trim();
+
+
+            if (!name || !price || !category || !image) {
+
+                showMessage(
+                    "Please fill in all fields.",
+                    "error"
+                );
+
+                return;
+            }
+
+
+            addButton.disabled = true;
+
+            addButton.textContent =
+                "Adding Product...";
+
+
+            try {
+
+                const response =
+                    await fetch("/api/products", {
+
+                        method: "POST",
+
+                        headers: {
+                            "Content-Type":
+                                "application/json"
+                        },
+
+                        body: JSON.stringify({
+                            name,
+                            price,
+                            category,
+                            image
+                        })
+                    });
+
+
+                const result =
+                    await response.json();
+
+
+                if (!response.ok) {
+
+                    throw new Error(
+                        result.error ||
+                        "Could not add product"
+                    );
+                }
+
+
+                showMessage(
+                    "✅ Product added successfully!",
+                    "success"
+                );
+
+
+                productForm.reset();
+
+                await loadProducts();
+
+            } catch (error) {
+
+                console.error(error);
+
+                showMessage(
+                    "❌ " + error.message,
+                    "error"
+                );
+
+            } finally {
+
+                addButton.disabled = false;
+
+                addButton.textContent =
+                    "Add Product";
+            }
+
+        }
+    );
+
+
+    /* =========================
+       DELETE PRODUCT
+       ========================= */
+
+    async function deleteProduct(id) {
+
+        const confirmed =
+            confirm(
+                "Are you sure you want to delete this product?"
+            );
+
+        if (!confirmed) {
+            return;
+        }
+
+
+        try {
+
+            const response =
+                await fetch(
+                    `/api/products/${id}`,
+                    {
+                        method: "DELETE"
+                    }
+                );
+
+
+            const result =
+                await response.json();
+
+
+            if (!response.ok) {
+
+                throw new Error(
+                    result.error ||
+                    "Could not delete product"
+                );
+            }
+
+
+            alert(
+                "Product deleted successfully."
+            );
+
+            await loadProducts();
+
+        } catch (error) {
+
+            console.error(error);
+
+            alert(
+                "Could not delete product.\n\n" +
+                error.message
+            );
+        }
+    }
+
+
+    /* =========================
+       ESCAPE HTML
+       ========================= */
+
+    function escapeHTML(value) {
+
+        const div =
+            document.createElement("div");
+
+        div.textContent =
+            String(value);
+
+        return div.innerHTML;
+    }
+
+
+    /* =========================
+       START
+       ========================= */
+
+    loadProducts();
+
+</script>
+
+</body>
+</html>
