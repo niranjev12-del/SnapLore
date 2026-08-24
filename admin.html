@@ -1,11 +1,9 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
-    <title>SnapLore - Admin Panel</title>
+    <title>SnapLore Admin Panel</title>
 
     <style>
         * {
@@ -27,8 +25,8 @@
             display: flex;
             justify-content: space-between;
             align-items: center;
-            gap: 15px;
             flex-wrap: wrap;
+            gap: 15px;
         }
 
         header h1 {
@@ -45,7 +43,7 @@
         }
 
         .container {
-            width: 90%;
+            width: 92%;
             max-width: 1200px;
             margin: 30px auto;
         }
@@ -62,10 +60,12 @@
             margin-bottom: 8px;
         }
 
-        .panel-description {
+        .description {
             color: #666;
             margin-bottom: 20px;
         }
+
+        /* ADD PRODUCT */
 
         .form-grid {
             display: grid;
@@ -78,17 +78,14 @@
             flex-direction: column;
         }
 
-        .form-group.full {
-            grid-column: 1 / -1;
-        }
-
         label {
             font-weight: bold;
             margin-bottom: 7px;
         }
 
         input,
-        select {
+        select,
+        textarea {
             width: 100%;
             padding: 12px;
             border: 1px solid #ccc;
@@ -97,7 +94,8 @@
         }
 
         input:focus,
-        select:focus {
+        select:focus,
+        textarea:focus {
             outline: none;
             border-color: #007bff;
         }
@@ -143,13 +141,15 @@
             color: #c62828;
         }
 
-        .products-header {
+        /* PRODUCTS */
+
+        .section-header {
             display: flex;
             justify-content: space-between;
             align-items: center;
             gap: 15px;
-            margin-bottom: 20px;
             flex-wrap: wrap;
+            margin-bottom: 20px;
         }
 
         .refresh-button {
@@ -166,14 +166,18 @@
             background: #0056b3;
         }
 
-        #products-status {
+        #products-status,
+        #orders-status {
             margin-bottom: 15px;
             font-weight: bold;
         }
 
         .product-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            grid-template-columns: repeat(
+                auto-fit,
+                minmax(220px, 1fr)
+            );
             gap: 20px;
         }
 
@@ -231,6 +235,62 @@
             background: #c62828;
         }
 
+        /* ORDERS */
+
+        .orders-container {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .order-card {
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            padding: 18px;
+            background: #fafafa;
+        }
+
+        .order-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 10px;
+            flex-wrap: wrap;
+            margin-bottom: 12px;
+        }
+
+        .order-id {
+            font-weight: bold;
+            color: #1565c0;
+        }
+
+        .order-date {
+            color: #777;
+            font-size: 13px;
+        }
+
+        .customer-details {
+            line-height: 1.7;
+            margin-bottom: 12px;
+        }
+
+        .order-items {
+            border-top: 1px solid #ddd;
+            padding-top: 12px;
+            margin-top: 10px;
+        }
+
+        .order-item {
+            padding: 5px 0;
+        }
+
+        .order-total {
+            margin-top: 12px;
+            font-size: 18px;
+            font-weight: bold;
+            color: #e65100;
+        }
+
         .empty {
             background: #fafafa;
             border: 1px dashed #ccc;
@@ -240,14 +300,14 @@
             color: #666;
         }
 
-        .orders-link {
-            display: inline-block;
-            margin-top: 10px;
-            color: #007bff;
-            text-decoration: none;
+        .loading {
+            color: #666;
         }
 
+        /* MOBILE */
+
         @media (max-width: 650px) {
+
             header {
                 padding: 15px;
             }
@@ -264,8 +324,8 @@
                 grid-template-columns: 1fr;
             }
 
-            .form-group.full {
-                grid-column: auto;
+            .product-grid {
+                grid-template-columns: 1fr;
             }
         }
     </style>
@@ -274,22 +334,32 @@
 <body>
 
 <header>
+
     <h1>SnapLore Admin</h1>
 
-    <a href="/index.html" class="back-button">
+    <a
+        href="/index.html"
+        class="back-button"
+    >
         Back to Store
     </a>
+
 </header>
+
 
 <div class="container">
 
-    <!-- ADD PRODUCT -->
+
+    <!-- =========================
+         ADD PRODUCT
+    ========================== -->
+
     <section class="panel">
 
         <h2>➕ Add New Product</h2>
 
-        <p class="panel-description">
-            Add a product to your SnapLore store. The product will be saved in Redis.
+        <p class="description">
+            Add a new product to your SnapLore store.
         </p>
 
         <form id="product-form">
@@ -297,7 +367,10 @@
             <div class="form-grid">
 
                 <div class="form-group">
-                    <label for="name">Product Name</label>
+
+                    <label for="name">
+                        Product Name
+                    </label>
 
                     <input
                         type="text"
@@ -305,10 +378,15 @@
                         placeholder="Example: Anniversary Gift Box"
                         required
                     >
+
                 </div>
 
+
                 <div class="form-group">
-                    <label for="price">Price (₹)</label>
+
+                    <label for="price">
+                        Price (₹)
+                    </label>
 
                     <input
                         type="number"
@@ -318,31 +396,59 @@
                         step="0.01"
                         required
                     >
+
                 </div>
 
-                <div class="form-group">
-                    <label for="category">Category</label>
 
-                    <select id="category" required>
-                        <option value="">Select Category</option>
-                        <option value="frames">Frames</option>
-                        <option value="hampers">Hampers</option>
-                        <option value="bouquets">Bouquets</option>
+                <div class="form-group">
+
+                    <label for="category">
+                        Category
+                    </label>
+
+                    <select
+                        id="category"
+                        required
+                    >
+
+                        <option value="">
+                            Select Category
+                        </option>
+
+                        <option value="frames">
+                            Frames
+                        </option>
+
+                        <option value="hampers">
+                            Hampers
+                        </option>
+
+                        <option value="bouquets">
+                            Bouquets
+                        </option>
+
                     </select>
+
                 </div>
 
+
                 <div class="form-group">
-                    <label for="image">Image URL / Image Path</label>
+
+                    <label for="image">
+                        Image Path / URL
+                    </label>
 
                     <input
                         type="text"
                         id="image"
-                        placeholder="Example: images/newproduct.jpg"
+                        placeholder="images/product.jpg"
                         required
                     >
+
                 </div>
 
             </div>
+
 
             <button
                 type="submit"
@@ -352,176 +458,288 @@
                 Add Product
             </button>
 
-            <div id="message" class="message"></div>
+
+            <div
+                id="message"
+                class="message"
+            ></div>
 
         </form>
 
     </section>
 
-    <!-- PRODUCTS -->
+
+
+    <!-- =========================
+         MANAGE PRODUCTS
+    ========================== -->
+
     <section class="panel">
 
-        <div class="products-header">
+        <div class="section-header">
 
             <div>
+
                 <h2>📦 Manage Products</h2>
 
-                <p class="panel-description" style="margin-bottom: 0;">
-                    Products currently saved in Redis
+                <p
+                    class="description"
+                    style="margin-bottom:0;"
+                >
+                    Products currently stored in Redis.
                 </p>
+
             </div>
 
             <button
                 class="refresh-button"
                 onclick="loadProducts()"
             >
-                Refresh Products
+                🔄 Refresh
             </button>
 
         </div>
+
 
         <div id="products-status">
             Loading products...
         </div>
 
+
         <div
-            class="product-grid"
             id="product-list"
+            class="product-grid"
         ></div>
 
     </section>
 
-    <!-- ORDERS -->
+
+
+    <!-- =========================
+         CUSTOMER ORDERS
+    ========================== -->
+
     <section class="panel">
 
-        <h2>🛍️ Customer Orders</h2>
+        <div class="section-header">
 
-        <p class="panel-description">
-            View the orders customers have placed.
-        </p>
+            <div>
 
-        <a
-            href="/admin-orders.html"
-            class="orders-link"
-        >
-            Open Orders Page →
-        </a>
+                <h2>🛍️ Customer Orders</h2>
+
+                <p
+                    class="description"
+                    style="margin-bottom:0;"
+                >
+                    Orders received from customers.
+                </p>
+
+            </div>
+
+            <button
+                class="refresh-button"
+                onclick="loadOrders()"
+            >
+                🔄 Refresh Orders
+            </button>
+
+        </div>
+
+
+        <div id="orders-status">
+            Loading orders...
+        </div>
+
+
+        <div
+            id="orders-list"
+            class="orders-container"
+        ></div>
 
     </section>
 
 </div>
 
+
+
 <script>
 
-    const productForm =
-        document.getElementById("product-form");
+/* =====================================================
+   ELEMENTS
+===================================================== */
 
-    const message =
-        document.getElementById("message");
+const productForm =
+    document.getElementById(
+        "product-form"
+    );
 
-    const addButton =
-        document.getElementById("add-button");
+const message =
+    document.getElementById(
+        "message"
+    );
 
-    const productList =
-        document.getElementById("product-list");
+const addButton =
+    document.getElementById(
+        "add-button"
+    );
 
-    const productsStatus =
-        document.getElementById("products-status");
+const productList =
+    document.getElementById(
+        "product-list"
+    );
+
+const productsStatus =
+    document.getElementById(
+        "products-status"
+    );
+
+const ordersList =
+    document.getElementById(
+        "orders-list"
+    );
+
+const ordersStatus =
+    document.getElementById(
+        "orders-status"
+    );
 
 
-    /* =========================
-       SHOW MESSAGE
-       ========================= */
+/* =====================================================
+   MESSAGE
+===================================================== */
 
-    function showMessage(text, type) {
+function showMessage(
+    text,
+    type
+) {
 
-        message.textContent = text;
+    message.textContent = text;
 
-        message.className =
-            "message " + type;
+    message.className =
+        "message " + type;
+}
 
-    }
+
+/* =====================================================
+   LOAD PRODUCTS
+===================================================== */
+
+async function loadProducts() {
+
+    productsStatus.textContent =
+        "Loading products...";
+
+    productList.innerHTML = "";
+
+    try {
+
+        const response =
+            await fetch(
+                "/api/products"
+            );
+
+        const products =
+            await response.json();
+
+        if (!response.ok) {
+
+            throw new Error(
+                products.error ||
+                "Could not load products"
+            );
+        }
 
 
-    /* =========================
-       LOAD PRODUCTS
-       ========================= */
+        if (!Array.isArray(products)) {
 
-    async function loadProducts() {
+            throw new Error(
+                "Invalid products response"
+            );
+        }
 
-        productsStatus.textContent =
-            "Loading products...";
 
-        productList.innerHTML = "";
-
-        try {
-
-            const response =
-                await fetch("/api/products");
-
-            const products =
-                await response.json();
-
-            if (!response.ok) {
-                throw new Error(
-                    products.error ||
-                    "Could not load products"
-                );
-            }
-
-            if (products.length === 0) {
-
-                productsStatus.textContent =
-                    "0 products found.";
-
-                productList.innerHTML = `
-                    <div class="empty">
-                        <h3>No products yet</h3>
-                        <p>Add your first product above.</p>
-                    </div>
-                `;
-
-                return;
-            }
+        if (products.length === 0) {
 
             productsStatus.textContent =
-                `${products.length} product(s) found`;
+                "No products found.";
 
-            products.forEach(product => {
+            productList.innerHTML = `
+
+                <div class="empty">
+
+                    <h3>
+                        No products yet
+                    </h3>
+
+                    <p>
+                        Add your first product above.
+                    </p>
+
+                </div>
+
+            `;
+
+            return;
+        }
+
+
+        productsStatus.textContent =
+            `${products.length} product(s) found`;
+
+
+        products.forEach(
+            product => {
 
                 const card =
-                    document.createElement("div");
+                    document.createElement(
+                        "div"
+                    );
 
-                card.className = "product-card";
+                card.className =
+                    "product-card";
+
 
                 const image =
-                    document.createElement("img");
+                    document.createElement(
+                        "img"
+                    );
 
-                image.src = product.image;
+                image.src =
+                    product.image;
 
-                image.alt = product.name;
+                image.alt =
+                    product.name;
 
-                image.onerror = function () {
-                    this.src =
-                        "https://via.placeholder.com/500x350?text=No+Image";
-                };
+                image.onerror =
+                    function () {
+
+                        this.src =
+                            "https://via.placeholder.com/500x350?text=No+Image";
+                    };
 
 
                 const info =
-                    document.createElement("div");
+                    document.createElement(
+                        "div"
+                    );
 
-                info.className = "product-info";
+                info.className =
+                    "product-info";
 
 
                 const name =
-                    document.createElement("h3");
+                    document.createElement(
+                        "h3"
+                    );
 
                 name.textContent =
                     product.name;
 
 
                 const price =
-                    document.createElement("div");
+                    document.createElement(
+                        "div"
+                    );
 
                 price.className =
                     "product-price";
@@ -531,7 +749,9 @@
 
 
                 const category =
-                    document.createElement("span");
+                    document.createElement(
+                        "span"
+                    );
 
                 category.className =
                     "product-category";
@@ -541,95 +761,157 @@
 
 
                 const deleteButton =
-                    document.createElement("button");
+                    document.createElement(
+                        "button"
+                    );
 
                 deleteButton.className =
                     "delete-button";
 
                 deleteButton.textContent =
-                    "Delete Product";
+                    "🗑️ Delete Product";
+
 
                 deleteButton.onclick =
-                    () => deleteProduct(product.id);
+                    function () {
+
+                        deleteProduct(
+                            product.id
+                        );
+
+                    };
 
 
-                info.appendChild(name);
-                info.appendChild(price);
-                info.appendChild(category);
-                info.appendChild(deleteButton);
-
-                card.appendChild(image);
-                card.appendChild(info);
-
-                productList.appendChild(card);
-
-            });
-
-        } catch (error) {
-
-            console.error(error);
-
-            productsStatus.textContent =
-                "Error loading products.";
-
-            productList.innerHTML = `
-                <div class="empty">
-                    <h3>Could not load products</h3>
-                    <p>${escapeHTML(error.message)}</p>
-                </div>
-            `;
-        }
-    }
-
-
-    /* =========================
-       ADD PRODUCT
-       ========================= */
-
-    productForm.addEventListener(
-        "submit",
-        async function (event) {
-
-            event.preventDefault();
-
-            const name =
-                document.getElementById("name")
-                    .value.trim();
-
-            const price =
-                document.getElementById("price")
-                    .value;
-
-            const category =
-                document.getElementById("category")
-                    .value;
-
-            const image =
-                document.getElementById("image")
-                    .value.trim();
-
-
-            if (!name || !price || !category || !image) {
-
-                showMessage(
-                    "Please fill in all fields.",
-                    "error"
+                info.appendChild(
+                    name
                 );
 
-                return;
+                info.appendChild(
+                    price
+                );
+
+                info.appendChild(
+                    category
+                );
+
+                info.appendChild(
+                    deleteButton
+                );
+
+
+                card.appendChild(
+                    image
+                );
+
+                card.appendChild(
+                    info
+                );
+
+
+                productList.appendChild(
+                    card
+                );
+
             }
+        );
 
 
-            addButton.disabled = true;
+    } catch (error) {
 
-            addButton.textContent =
-                "Adding Product...";
+        console.error(
+            "Products error:",
+            error
+        );
+
+        productsStatus.textContent =
+            "Could not load products.";
+
+        productList.innerHTML = `
+
+            <div class="empty">
+
+                <h3>
+                    Error loading products
+                </h3>
+
+                <p>
+                    ${escapeHTML(
+                        error.message
+                    )}
+                </p>
+
+            </div>
+
+        `;
+
+    }
+}
 
 
-            try {
+/* =====================================================
+   ADD PRODUCT
+===================================================== */
 
-                const response =
-                    await fetch("/api/products", {
+productForm.addEventListener(
+    "submit",
+    async function (event) {
+
+        event.preventDefault();
+
+
+        const name =
+            document.getElementById(
+                "name"
+            ).value.trim();
+
+
+        const price =
+            document.getElementById(
+                "price"
+            ).value;
+
+
+        const category =
+            document.getElementById(
+                "category"
+            ).value;
+
+
+        const image =
+            document.getElementById(
+                "image"
+            ).value.trim();
+
+
+        if (
+            !name ||
+            !price ||
+            !category ||
+            !image
+        ) {
+
+            showMessage(
+                "Please fill in all fields.",
+                "error"
+            );
+
+            return;
+        }
+
+
+        addButton.disabled =
+            true;
+
+        addButton.textContent =
+            "Adding Product...";
+
+
+        try {
+
+            const response =
+                await fetch(
+                    "/api/products",
+                    {
 
                         method: "POST",
 
@@ -638,82 +920,22 @@
                                 "application/json"
                         },
 
-                        body: JSON.stringify({
-                            name,
-                            price,
-                            category,
-                            image
-                        })
-                    });
+                        body:
+                            JSON.stringify({
 
+                                name:
+                                    name,
 
-                const result =
-                    await response.json();
+                                price:
+                                    price,
 
+                                category:
+                                    category,
 
-                if (!response.ok) {
+                                image:
+                                    image
 
-                    throw new Error(
-                        result.error ||
-                        "Could not add product"
-                    );
-                }
-
-
-                showMessage(
-                    "✅ Product added successfully!",
-                    "success"
-                );
-
-
-                productForm.reset();
-
-                await loadProducts();
-
-            } catch (error) {
-
-                console.error(error);
-
-                showMessage(
-                    "❌ " + error.message,
-                    "error"
-                );
-
-            } finally {
-
-                addButton.disabled = false;
-
-                addButton.textContent =
-                    "Add Product";
-            }
-
-        }
-    );
-
-
-    /* =========================
-       DELETE PRODUCT
-       ========================= */
-
-    async function deleteProduct(id) {
-
-        const confirmed =
-            confirm(
-                "Are you sure you want to delete this product?"
-            );
-
-        if (!confirmed) {
-            return;
-        }
-
-
-        try {
-
-            const response =
-                await fetch(
-                    `/api/products/${id}`,
-                    {
-                        method: "DELETE"
+                            })
                     }
                 );
 
@@ -726,50 +948,488 @@
 
                 throw new Error(
                     result.error ||
-                    "Could not delete product"
+                    "Could not add product"
                 );
             }
 
 
-            alert(
-                "Product deleted successfully."
+            showMessage(
+                "✅ Product added successfully!",
+                "success"
             );
+
+
+            productForm.reset();
+
 
             await loadProducts();
 
+
         } catch (error) {
 
-            console.error(error);
+            console.error(
+                "Add product error:",
+                error
+            );
 
-            alert(
-                "Could not delete product.\n\n" +
-                error.message
+            showMessage(
+                "❌ " +
+                error.message,
+                "error"
+            );
+
+        } finally {
+
+            addButton.disabled =
+                false;
+
+            addButton.textContent =
+                "Add Product";
+        }
+
+    }
+);
+
+
+/* =====================================================
+   DELETE PRODUCT
+===================================================== */
+
+async function deleteProduct(id) {
+
+    const confirmed =
+        confirm(
+            "Are you sure you want to delete this product?"
+        );
+
+
+    if (!confirmed) {
+        return;
+    }
+
+
+    try {
+
+        const response =
+            await fetch(
+                `/api/products/${id}`,
+                {
+                    method:
+                        "DELETE"
+                }
+            );
+
+
+        const result =
+            await response.json();
+
+
+        if (!response.ok) {
+
+            throw new Error(
+                result.error ||
+                "Could not delete product"
             );
         }
+
+
+        alert(
+            "Product deleted successfully."
+        );
+
+
+        await loadProducts();
+
+
+    } catch (error) {
+
+        console.error(
+            "Delete error:",
+            error
+        );
+
+        alert(
+            "Could not delete product.\n\n" +
+            error.message
+        );
     }
+}
 
 
-    /* =========================
-       ESCAPE HTML
-       ========================= */
+/* =====================================================
+   LOAD CUSTOMER ORDERS
+===================================================== */
 
-    function escapeHTML(value) {
+async function loadOrders() {
 
-        const div =
-            document.createElement("div");
+    ordersStatus.textContent =
+        "Loading orders...";
 
-        div.textContent =
-            String(value);
+    ordersList.innerHTML = "";
 
-        return div.innerHTML;
+
+    try {
+
+        const response =
+            await fetch(
+                "/api/orders"
+            );
+
+
+        const orders =
+            await response.json();
+
+
+        if (!response.ok) {
+
+            throw new Error(
+                orders.error ||
+                "Could not load orders"
+            );
+        }
+
+
+        if (!Array.isArray(orders)) {
+
+            throw new Error(
+                "Invalid orders response"
+            );
+        }
+
+
+        if (orders.length === 0) {
+
+            ordersStatus.textContent =
+                "No orders found.";
+
+            ordersList.innerHTML = `
+
+                <div class="empty">
+
+                    <h3>
+                        No customer orders yet
+                    </h3>
+
+                    <p>
+                        Orders will appear here
+                        when customers place them.
+                    </p>
+
+                </div>
+
+            `;
+
+            return;
+        }
+
+
+        ordersStatus.textContent =
+            `${orders.length} order(s) found`;
+
+
+        orders.forEach(
+            order => {
+
+                const card =
+                    document.createElement(
+                        "div"
+                    );
+
+                card.className =
+                    "order-card";
+
+
+                const header =
+                    document.createElement(
+                        "div"
+                    );
+
+                header.className =
+                    "order-header";
+
+
+                const orderId =
+                    document.createElement(
+                        "div"
+                    );
+
+                orderId.className =
+                    "order-id";
+
+                orderId.textContent =
+                    order.id ||
+                    "Unknown Order";
+
+
+                const date =
+                    document.createElement(
+                        "div"
+                    );
+
+                date.className =
+                    "order-date";
+
+
+                if (order.createdAt) {
+
+                    date.textContent =
+                        new Date(
+                            order.createdAt
+                        ).toLocaleString();
+
+                } else {
+
+                    date.textContent =
+                        "";
+                }
+
+
+                header.appendChild(
+                    orderId
+                );
+
+                header.appendChild(
+                    date
+                );
+
+
+                const customer =
+                    document.createElement(
+                        "div"
+                    );
+
+                customer.className =
+                    "customer-details";
+
+
+                customer.innerHTML = `
+
+                    <strong>
+                        Customer:
+                    </strong>
+                    ${escapeHTML(
+                        order.name || "-"
+                    )}
+                    <br>
+
+                    <strong>
+                        Email:
+                    </strong>
+                    ${escapeHTML(
+                        order.email || "-"
+                    )}
+                    <br>
+
+                    <strong>
+                        Phone:
+                    </strong>
+                    ${escapeHTML(
+                        order.phone || "-"
+                    )}
+                    <br>
+
+                    <strong>
+                        Address:
+                    </strong>
+                    ${escapeHTML(
+                        order.address || "-"
+                    )}
+                    <br>
+
+                    <strong>
+                        Payment:
+                    </strong>
+                    ${escapeHTML(
+                        order.paymentMethod || "-"
+                    )}
+
+                `;
+
+
+                const items =
+                    document.createElement(
+                        "div"
+                    );
+
+                items.className =
+                    "order-items";
+
+
+                const itemsTitle =
+                    document.createElement(
+                        "strong"
+                    );
+
+                itemsTitle.textContent =
+                    "Items:";
+
+
+                items.appendChild(
+                    itemsTitle
+                );
+
+
+                if (
+                    Array.isArray(
+                        order.items
+                    ) &&
+                    order.items.length > 0
+                ) {
+
+                    order.items.forEach(
+                        item => {
+
+                            const itemDiv =
+                                document.createElement(
+                                    "div"
+                                );
+
+                            itemDiv.className =
+                                "order-item";
+
+
+                            const itemName =
+                                item.name ||
+                                item.productName ||
+                                "Product";
+
+
+                            const quantity =
+                                item.quantity ||
+                                1;
+
+
+                            const itemPrice =
+                                item.price !== undefined
+                                    ? `₹${item.price}`
+                                    : "";
+
+
+                            itemDiv.textContent =
+                                `${itemName} × ${quantity} ${itemPrice}`;
+
+
+                            items.appendChild(
+                                itemDiv
+                            );
+
+                        }
+                    );
+
+                } else {
+
+                    const noItems =
+                        document.createElement(
+                            "div"
+                        );
+
+                    noItems.className =
+                        "order-item";
+
+                    noItems.textContent =
+                        "No item details available.";
+
+                    items.appendChild(
+                        noItems
+                    );
+                }
+
+
+                const total =
+                    document.createElement(
+                        "div"
+                    );
+
+                total.className =
+                    "order-total";
+
+                total.textContent =
+                    `Total: ₹${order.total || 0}`;
+
+
+                card.appendChild(
+                    header
+                );
+
+                card.appendChild(
+                    customer
+                );
+
+                card.appendChild(
+                    items
+                );
+
+                card.appendChild(
+                    total
+                );
+
+
+                ordersList.appendChild(
+                    card
+                );
+
+            }
+        );
+
+
+    } catch (error) {
+
+        console.error(
+            "Orders error:",
+            error
+        );
+
+
+        ordersStatus.textContent =
+            "Could not load orders.";
+
+
+        ordersList.innerHTML = `
+
+            <div class="empty">
+
+                <h3>
+                    Error loading orders
+                </h3>
+
+                <p>
+                    ${escapeHTML(
+                        error.message
+                    )}
+                </p>
+
+            </div>
+
+        `;
     }
+}
 
 
-    /* =========================
-       START
-       ========================= */
+/* =====================================================
+   ESCAPE HTML
+===================================================== */
 
-    loadProducts();
+function escapeHTML(value) {
+
+    const div =
+        document.createElement(
+            "div"
+        );
+
+    div.textContent =
+        String(value);
+
+    return div.innerHTML;
+}
+
+
+/* =====================================================
+   START
+===================================================== */
+
+loadProducts();
+
+loadOrders();
 
 </script>
 
