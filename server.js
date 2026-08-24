@@ -8,14 +8,10 @@ dotenv.config();
 const app = express();
 const PORT = process.env.PORT || 3000;
 
-// Middleware
 app.use(cors());
 app.use(express.json());
-
-// Serve website files
 app.use(express.static(__dirname));
 
-// Redis connection
 const redis = createClient({
     url: process.env.REDIS_URL
 });
@@ -24,178 +20,11 @@ redis.on("error", (err) => {
     console.error("Redis Error:", err);
 });
 
+/* =========================
+   DEFAULT PRODUCTS
+   ========================= */
 
-// ==========================================
-// GET PRODUCTS
-// ==========================================
-
-app.get("/api/products", async (req, res) => {
-    try {
-        const products = await redis.get("products");
-
-        if (!products) {
-            return res.json([]);
-        }
-
-        res.json(JSON.parse(products));
-
-    } catch (error) {
-        console.error("Products error:", error);
-
-        res.status(500).json({
-            error: error.message
-        });
-    }
-});
-
-
-// ==========================================
-// SAVE ORDER
-// ==========================================
-
-app.post("/api/orders", async (req, res) => {
-    try {
-        const order = req.body;
-
-        // Check customer details
-        if (
-            !order.name ||
-            !order.email ||
-            !order.phone ||
-            !order.address
-        ) {
-            return res.status(400).json({
-                error: "Missing customer details"
-            });
-        }
-
-        // Create unique order ID
-        const orderId = `order:${Date.now()}`;
-
-        // Create order object
-        const orderData = {
-            id: orderId,
-            name: order.name,
-            email: order.email,
-            phone: order.phone,
-            address: order.address,
-            paymentMethod: order.paymentMethod || "Not specified",
-            items: order.items || [],
-            total: order.total || 0,
-            createdAt: new Date().toISOString()
-        };
-
-        // Save order in Redis
-        await redis.set(
-            orderId,
-            JSON.stringify(orderData)
-        );
-
-        // Also add order ID to a Redis list
-        await redis.lPush(
-            "orders",
-            orderId
-        );
-
-        console.log("New order saved:", orderId);
-
-        // Send response to website
-        res.json({
-            success: true,
-            orderId: orderId
-        });
-
-    } catch (error) {
-        console.error("Order error:", error);
-
-        res.status(500).json({
-            error: "Could not save order"
-        });
-    }
-});
-
-
-// ==========================================
-// GET ALL ORDERS
-// ==========================================
-
-app.get("/api/orders", async (req, res) => {
-    try {
-        // Get all order IDs
-        const orderIds = await redis.lRange(
-            "orders",
-            0,
-            -1
-        );
-
-        if (orderIds.length === 0) {
-            return res.json([]);
-        }
-
-        // Get all orders from Redis
-        const orders = await Promise.all(
-            orderIds.map(async (orderId) => {
-
-                const order = await redis.get(orderId);
-
-                if (!order) {
-                    return null;
-                }
-
-                return JSON.parse(order);
-            })
-        );
-
-        // Remove empty orders
-        const validOrders = orders.filter(
-            (order) => order !== null
-        );
-
-        res.json(validOrders);
-
-    } catch (error) {
-        console.error("Get orders error:", error);
-
-        res.status(500).json({
-            error: "Could not load orders"
-        });
-    }
-});
-
-
-// ==========================================
-// GET SINGLE ORDER
-// ==========================================
-
-app.get("/api/orders/:orderId", async (req, res) => {
-    try {
-        const orderId = req.params.orderId;
-
-        const order = await redis.get(orderId);
-
-        if (!order) {
-            return res.status(404).json({
-                error: "Order not found"
-            });
-        }
-
-        res.json(JSON.parse(order));
-
-    } catch (error) {
-        console.error("Get single order error:", error);
-
-        res.status(500).json({
-            error: "Could not load order"
-        });
-    }
-});
-
-
-// ==========================================
-// PRODUCTS
-// ==========================================
-
-const products = [
+const defaultProducts = [
     {
         id: 1,
         name: "A4 Photo Frame",
@@ -226,60 +55,424 @@ const products = [
     }
 ];
 
+/* =========================
+   PRODUCT FUNCTIONS
+   ========================= */
 
-// ==========================================
-// SAVE PRODUCTS TO REDIS
-// ==========================================
+async function getProducts() {
+    const data = await redis.get("products");
 
-async function saveProducts() {
+    if (!data) {
+        return [];
+    }
 
-    const existing = await redis.get("products");
-
-    if (!existing) {
-
-        await redis.set(
-            "products",
-            JSON.stringify(products)
-        );
-
-        console.log("Products saved to Redis");
-
-    } else {
-
-        console.log("Products already exist in Redis");
-
+    try {
+        const products = JSON.parse(data);
+        return Array.isArray(products) ? products : [];
+    } catch (error) {
+        console.error("Invalid products data:", error);
+        return [];
     }
 }
 
+async function saveProducts(products) {
+    await redis.set(
+        "products",
+        JSON.stringify(products)
+    );
+}
 
-// ==========================================
-// START SERVER
-// ==========================================
+/* =========================
+   GET PRODUCTS
+   ========================= */
 
-async function main() {
+app.get("/api/products", async (req, res) => {
+    try {
+        const products = await getProducts();
+
+        res.json(products);
+
+    } catch (error) {
+
+        console.error(
+            "Get products error:",
+            error
+        );
+
+        res.status(500).json({
+            error: "Could not load products"
+        });
+    }
+});
+
+/* =========================
+   ADD PRODUCT
+   ========================= */
+
+app.post("/api/products", async (req, res) => {
 
     try {
 
-        // Connect to Redis
+        const {
+            name,
+            price,
+            category,
+            image
+        } = req.body;
+
+        if (
+            !name ||
+            price === undefined ||
+            !category ||
+            !image
+        ) {
+
+            return res.status(400).json({
+                error:
+                    "Name, price, category and image are required"
+            });
+        }
+
+        const numericPrice = Number(price);
+
+        if (
+            !Number.isFinite(numericPrice) ||
+            numericPrice < 0
+        ) {
+
+            return res.status(400).json({
+                error:
+                    "Price must be a valid number"
+            });
+        }
+
+        const products = await getProducts();
+
+        let newId = 1;
+
+        if (products.length > 0) {
+
+            newId =
+                Math.max(
+                    ...products.map(
+                        product =>
+                            Number(product.id) || 0
+                    )
+                ) + 1;
+        }
+
+        const newProduct = {
+
+            id: newId,
+
+            name: String(name).trim(),
+
+            price: numericPrice,
+
+            category:
+                String(category)
+                    .trim()
+                    .toLowerCase(),
+
+            image:
+                String(image).trim()
+        };
+
+        products.push(newProduct);
+
+        await saveProducts(products);
+
+        res.status(201).json({
+
+            success: true,
+
+            message:
+                "Product added successfully",
+
+            product: newProduct
+        });
+
+    } catch (error) {
+
+        console.error(
+            "Add product error:",
+            error
+        );
+
+        res.status(500).json({
+            error: "Could not add product"
+        });
+    }
+});
+
+/* =========================
+   DELETE PRODUCT
+   ========================= */
+
+app.delete(
+    "/api/products/:id",
+    async (req, res) => {
+
+        try {
+
+            const id =
+                Number(req.params.id);
+
+            if (!Number.isFinite(id)) {
+
+                return res.status(400).json({
+                    error:
+                        "Invalid product ID"
+                });
+            }
+
+            const products =
+                await getProducts();
+
+            const exists =
+                products.some(
+                    product =>
+                        Number(product.id) === id
+                );
+
+            if (!exists) {
+
+                return res.status(404).json({
+                    error:
+                        "Product not found"
+                });
+            }
+
+            const updatedProducts =
+                products.filter(
+                    product =>
+                        Number(product.id) !== id
+                );
+
+            await saveProducts(
+                updatedProducts
+            );
+
+            res.json({
+
+                success: true,
+
+                message:
+                    "Product deleted successfully"
+            });
+
+        } catch (error) {
+
+            console.error(
+                "Delete product error:",
+                error
+            );
+
+            res.status(500).json({
+                error:
+                    "Could not delete product"
+            });
+        }
+    }
+);
+
+/* =========================
+   SAVE ORDER
+   ========================= */
+
+app.post("/api/orders", async (req, res) => {
+
+    try {
+
+        const order = req.body;
+
+        if (
+            !order.name ||
+            !order.email ||
+            !order.phone ||
+            !order.address
+        ) {
+
+            return res.status(400).json({
+                error:
+                    "Missing customer details"
+            });
+        }
+
+        const orderId =
+            `order:${Date.now()}`;
+
+        const orderData = {
+
+            id: orderId,
+
+            name: order.name,
+
+            email: order.email,
+
+            phone: order.phone,
+
+            address: order.address,
+
+            paymentMethod:
+                order.paymentMethod || "",
+
+            items:
+                order.items || [],
+
+            total:
+                order.total || 0,
+
+            createdAt:
+                new Date().toISOString()
+        };
+
+        await redis.set(
+            orderId,
+            JSON.stringify(orderData)
+        );
+
+        res.json({
+
+            success: true,
+
+            orderId: orderId
+        });
+
+    } catch (error) {
+
+        console.error(
+            "Order error:",
+            error
+        );
+
+        res.status(500).json({
+
+            error:
+                "Could not save order"
+        });
+    }
+});
+
+/* =========================
+   GET ORDERS
+   ========================= */
+
+app.get("/api/orders", async (req, res) => {
+
+    try {
+
+        const keys =
+            await redis.keys("order:*");
+
+        const orders = [];
+
+        for (const key of keys) {
+
+            const data =
+                await redis.get(key);
+
+            if (data) {
+
+                try {
+
+                    orders.push(
+                        JSON.parse(data)
+                    );
+
+                } catch (error) {
+
+                    console.error(
+                        `Invalid order: ${key}`
+                    );
+                }
+            }
+        }
+
+        orders.sort(
+            (a, b) =>
+                new Date(
+                    b.createdAt || 0
+                ) -
+                new Date(
+                    a.createdAt || 0
+                )
+        );
+
+        res.json(orders);
+
+    } catch (error) {
+
+        console.error(
+            "Get orders error:",
+            error
+        );
+
+        res.status(500).json({
+
+            error:
+                "Could not load orders"
+        });
+    }
+});
+
+/* =========================
+   START SERVER
+   ========================= */
+
+async function startServer() {
+
+    try {
+
+        if (!process.env.REDIS_URL) {
+
+            throw new Error(
+                "REDIS_URL is missing. Add REDIS_URL in Render Environment Variables."
+            );
+        }
+
         await redis.connect();
 
-        console.log("Connected to Redis Cloud!");
+        console.log(
+            "Connected to Redis!"
+        );
 
-        // Save products
-        await saveProducts();
+        /*
+          IMPORTANT:
+          Only create the original products
+          when Redis does not already have
+          a products key.
+        */
 
-        // Start Express server
-        app.listen(PORT, () => {
+        const existingProducts =
+            await redis.get("products");
 
-            console.log(
-                `SnapLore running at http://localhost:${PORT}`
+        if (!existingProducts) {
+
+            await saveProducts(
+                defaultProducts
             );
 
             console.log(
-                `Admin page: http://localhost:${PORT}/admin.html`
+                "Default products saved to Redis"
             );
 
-        });
+        } else {
+
+            console.log(
+                "Existing products found. Keeping them."
+            );
+        }
+
+        app.listen(
+            PORT,
+            () => {
+
+                console.log(
+                    `SnapLore running on port ${PORT}`
+                );
+            }
+        );
 
     } catch (error) {
 
@@ -288,7 +481,8 @@ async function main() {
             error
         );
 
+        process.exit(1);
     }
 }
 
-main();
+startServer();
