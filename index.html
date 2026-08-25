@@ -483,58 +483,61 @@ loadProducts();
     let cart = [];
 
     // Display Products
-    function displayProducts() {
+   function displayProducts() {
+    const list = document.getElementById("product-list");
+    const search = document.getElementById("search").value.toLowerCase();
+    const category = document.getElementById("category").value;
 
-        const list = document.getElementById("product-list");
-        const search = document
-            .getElementById("search")
-            .value
-            .toLowerCase();
+    list.innerHTML = "";
 
-        const category = document.getElementById("category").value;
+    const filteredProducts = products.filter(product => {
+        const productName = String(product.name || "").toLowerCase();
+        const productCategory = String(product.category || "").toLowerCase();
 
-        list.innerHTML = "";
+        const matchesSearch = productName.includes(search);
 
-        const filteredProducts = products.filter(product => {
+        const matchesCategory =
+            category === "all" ||
+            productCategory === category.toLowerCase();
 
-            const matchesSearch =
-                product.name.toLowerCase().includes(search);
+        return matchesSearch && matchesCategory;
+    });
 
-            const matchesCategory =
-                category === "all" ||
-                product.category === category;
-
-            return matchesSearch && matchesCategory;
-        });
-
-        filteredProducts.forEach(product => {
-
-            list.innerHTML += `
-                <div class="product">
-
-                    <img src="${product.image}" alt="${product.name}">
-
-                    <div class="product-info">
-
-                        <h3>${product.name}</h3>
-
-                        <p class="price">
-                            ₹${product.price}
-                        </p>
-
-                        <button
-                            class="add-btn"
-                            onclick="addToCart(${product.id})"
-                        >
-                            Add to Cart
-                        </button>
-
-                    </div>
-                </div>
-            `;
-        });
+    if (filteredProducts.length === 0) {
+        list.innerHTML = `
+            <p style="text-align:center; grid-column:1/-1; font-size:18px;">
+                No products found.
+            </p>
+        `;
+        return;
     }
 
+    filteredProducts.forEach(product => {
+        list.innerHTML += `
+            <div class="product">
+                <img 
+                    src="${product.image || ''}" 
+                    alt="${product.name || 'Product'}"
+                >
+
+                <div class="product-info">
+                    <h3>${product.name || "Unnamed Product"}</h3>
+
+                    <p class="price">
+                        ₹${product.price || 0}
+                    </p>
+
+                    <button
+                        class="add-btn"
+                        onclick="addToCart(${JSON.stringify(product.id)})"
+                    >
+                        Add to Cart
+                    </button>
+                </div>
+            </div>
+        `;
+    });
+}
     // Add product to cart
     function addToCart(id) {
 
